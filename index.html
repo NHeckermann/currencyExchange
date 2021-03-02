@@ -35,79 +35,15 @@
 	
 	<div id="baseSection" class="userInput">
 		<input type="number" id="base_num" value="1.00">
-		<select id = "baseCurrencyDropdown" onchange = "selectBaseCurrency()" >
-			<option>AUD</option>
-			<option>BGN</option>
-			<option>BRL</option>
-			<option>CAD</option>
-			<option>CHF</option>
-			<option>CNY</option>
-			<option>CZK</option>
-			<option>DKK</option>
-			<option>EUR</option>
-			<option>GBP</option>
-			<option>HKD</option>
-			<option>HRK</option>
-			<option>HUF</option>
-			<option>IDR</option>
-			<option>ILS</option>
-			<option>INR</option>
-			<option>ISK</option>
-			<option>JPY</option>
-			<option>KRW</option>
-			<option>MXN</option>
-			<option>MYR</option>
-			<option>NOK</option>
-			<option>NZD</option>
-			<option>PHP</option>
-			<option>PLN</option>
-			<option>RON</option>
-			<option>RUB</option>
-			<option>SEK</option>
-			<option>SGD</option>
-			<option>THB</option>
-			<option>TRY</option>
-			<option>USD</option>
-			<option>ZAR</option>
+		<select id = "baseCurrencyDropdown" onchange = "calculateConversion(1)" >
+		<!--options added in script-->
 		</select>
 	</div>
 	
 	<div id="conversionSection" class="userInput">
-		<input type="number" id="convertTo_num" value="1.00">
-		<select id = "conversionCurrencyDropdown" onchange = "selectConversionCurrency()" >
-			<option>AUD</option>
-			<option>BGN</option>
-			<option>BRL</option>
-			<option>CAD</option>
-			<option>CHF</option>
-			<option>CNY</option>
-			<option>CZK</option>
-			<option>DKK</option>
-			<option>EUR</option>
-			<option>GBP</option>
-			<option>HKD</option>
-			<option>HRK</option>
-			<option>HUF</option>
-			<option>IDR</option>
-			<option>ILS</option>
-			<option>INR</option>
-			<option>ISK</option>
-			<option>JPY</option>
-			<option>KRW</option>
-			<option>MXN</option>
-			<option>MYR</option>
-			<option>NOK</option>
-			<option>NZD</option>
-			<option>PHP</option>
-			<option>PLN</option>
-			<option>RON</option>
-			<option>RUB</option>
-			<option>SEK</option>
-			<option>SGD</option>
-			<option>THB</option>
-			<option>TRY</option>
-			<option>USD</option>
-			<option>ZAR</option>
+		<input type="number" id="convertTo_num">
+		<select id = "conversionCurrencyDropdown" onchange = "calculateConversion(2)" >
+		<!--options added in script-->
 		</select>
 	</div>
 

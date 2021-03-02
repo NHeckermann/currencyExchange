@@ -1,23 +1,189 @@
 // Nikki Heckermann
 
-// initialize base currency for API
-var extendURL = "?base="
-var setBase = extendURL + document.getElementById("baseCurrencyDropdown").value;
+// store API data
+var ratesData = fetchAPI().then(function(results){
+	// access results here by chaining to the returned promise
+	ratesData = convertData(results);
 
-// update base currency for API if the user changes this dropdown selection
-function selectBaseCurrency() {
-	var baseCurrencyList = document.getElementById("baseCurrencyDropdown");
-	var activeBaseCurrency = baseCurrencyList.options[baseCurrencyList.selectedIndex].text;
+	// give all fields a starting value upon page landing
+	calculateConversion(1);
+	updateHeadings();
+});	
 
-	// change base on API URL
-	setBase = extendURL + activeBaseCurrency;
+
+// get data from  API 
+function fetchAPI() {
+	return fetch("https://api.exchangeratesapi.io/latest")
+		.then((response) => {
+			return response.json();
+		})
+		.then((data) => {
+			// console.log(data);
+			return data;
+		})
+		.catch((error) => {
+			console.warn("Error: Could not connect to API.");
+		})
+	}
+
+
+// get map of conversion rates and populate dropdown lists
+function convertData(data) {
+
+	var baseCurrencyList = document.getElementById('baseCurrencyDropdown');
+	var conversionCurrencyList = document.getElementById('conversionCurrencyDropdown');
+
+	// translate JSON data to map
+	var dataObjToMap = data => {
+		var keys = Object.keys(data);
+		var map = new Map(); //new Map([...map.entries()].sort());
+		var baseOption;
+		var currencyOption;
+
+		for(let i = 0; i < keys.length; i++) {
+			// populate map
+			map.set(keys[i], data[keys[i]])
+			
+			// populate the currency selection dropdown lists from the API data
+				// account for base currency not listed in rates
+			if (keys[i] === 'base') {
+				baseOption = document.createElement('option');
+				baseOption.text = data[keys[i]];
+				baseCurrencyList.add(baseOption);
+
+				currencyOption = document.createElement('option');
+				currencyOption.text = data[keys[i]];
+				conversionCurrencyList.add(currencyOption);
+			}
+
+				// ensure only keys in rates object are listed
+			if (keys.length > 3) {
+				baseOption = document.createElement('option');
+				baseOption.text = keys[i];
+				baseCurrencyList.add(baseOption);
+
+				currencyOption = document.createElement('option');
+				currencyOption.text = keys[i];
+				conversionCurrencyList.add(currencyOption);
+			}
+		}
+		return map;
+		}
+	
+	var data_map = dataObjToMap(data);
+
+	// update date
+	var currentDate = data_map.get('date');
+	document.getElementById("displayDate").innerHTML = currentDate;
+
+	// convert object value to key value map
+	var rates_map = dataObjToMap(data_map.get('rates'));
+
+	// sort the the currency selection dropdown lists
+  	sortList("baseCurrencyDropdown");
+  	sortList("conversionCurrencyDropdown");
+
+	// set the default values of the dropdown lists
+	setDropDownDefault("USD", baseCurrencyList);
+	setDropDownDefault("EUR", conversionCurrencyList);
+
+	return rates_map;
 }
 
-// update conversion currency for rate value if the user changes this dropdown selection
-function selectConversionCurrency() {
-	var conversionCurrencyList = document.getElementById("conversionCurrencyDropdown");
-	var activeConversionCurrency = conversionCurrencyList.options[conversionCurrencyList.selectedIndex].text;
+
+// sort the dropdown lists alphabetically
+function sortList(dropdownListID) {
+	var list, i, switching, b, shouldSwitch;
+	list = document.getElementById(dropdownListID);
+	switching = true;
+	// continue until no switching occurs
+	while (switching) {
+		switching = false;
+	  	b = list.getElementsByTagName("option");
+
+		for (i = 0; i < (b.length - 1); i++) {
+			shouldSwitch = false;
+		// check if the next item should switch places with the current item
+		if (b[i].innerHTML.toLowerCase() > b[i + 1].innerHTML.toLowerCase()) {
+			/* if next item is alphabetically
+			lower than current item, mark as a switch
+			and break the loop: */
+			shouldSwitch = true;
+			break;
+		}
+	  }
+	  	if (shouldSwitch) {
+			/* if a switch has been marked, make the switch
+			and mark the switch as done: */
+			b[i].parentNode.insertBefore(b[i + 1], b[i]);
+			switching = true;
+	  	}
+	}
 }
+
+
+// set the default values for the dropdown lists
+function setDropDownDefault(defaultCurrency, dropdownList) {
+	for(var i, j = 0; i = dropdownList.options[j]; j++) {
+		if(i.value == defaultCurrency) {
+			dropdownList.selectedIndex = j;
+			break;
+		}	
+	}
+}
+
+
+// get the conversion rate from the rates map unless currency matches base units
+function getConversionRate(conversionCurrency) {
+	if (conversionCurrency === "EUR") {
+		return 1;
+	}
+	else {
+		return ratesData.get(conversionCurrency);
+	}
+}
+
+
+// convert currency from input
+function calculateConversion(textfield) {
+
+	// use input from first textfield/dropdown to update info in second textfield
+	if (textfield === 1) {
+		rate = getConversionRate(document.getElementById("baseCurrencyDropdown").value);
+
+		var baseAmt = document.getElementById("base_num").value;
+
+		var inEuros = baseAmt / rate;
+
+		rate = getConversionRate(document.getElementById("conversionCurrencyDropdown").value);
+
+		var conversionAmt = (inEuros * rate).toFixed(2);
+
+		// update conversion amt textfield
+		document.getElementById("convertTo_num").value = conversionAmt;
+	}
+	// use input from second textfield/dropdown to update info in first textfield
+	else if (textfield === 2) {
+		rate = getConversionRate(document.getElementById("conversionCurrencyDropdown").value);
+
+		var conversionAmt = document.getElementById("convertTo_num").value;
+		
+		var inEuros = conversionAmt / rate;
+		
+		rate = getConversionRate(document.getElementById("baseCurrencyDropdown").value);
+		var baseAmt = (inEuros * rate).toFixed(2);
+
+		// update conversion amt textfield
+		document.getElementById("base_num").value = baseAmt;
+	}
+	else {
+		console.log("Error, base textfield undefined.")
+	}
+
+	// update headings with results
+	updateHeadings();
+}
+
 
 // update the text headings above the input sections with the results of the calculated values
 function updateHeadings() {
@@ -28,99 +194,18 @@ function updateHeadings() {
 		" " + document.getElementById("conversionCurrencyDropdown").value;
 }
 
-// make calculation from the user input for base currency
-function calculateFromBase(rate) {
 
-	var baseAmt = document.getElementById("base_num").value;
-
-	var conversionAmt = (baseAmt * rate).toFixed(2);
-
-	// update conversion amt textfield
-	document.getElementById("convertTo_num").value = conversionAmt;
-
-	// update headings with results
-	updateHeadings();
-}
-
-// make calculation from the user input for conversion currency
-function calculateBackwards(rate) {
-
-	var conversionAmt = document.getElementById("convertTo_num").value;
-
-	var baseAmt = (conversionAmt / rate).toFixed(2);
-
-	// update conversion amt textfield
-	document.getElementById("base_num").value = baseAmt;
-
-	// update headings with results
-	updateHeadings();
-}
-
-// get data from  API 
-function fetchAPI(forwards) {
-	var API_URL = "https://api.exchangeratesapi.io/latest" + setBase;
-	var conversionCurrency = document.getElementById("conversionCurrencyDropdown").value;
-
-	fetch(API_URL)
-		.then((response) => {
-			return response.json()
-		})
-		.then((data) => {
-			// translate JSON data to map
-			var dataObjToMap = data => {
-				var keys = Object.keys(data);
-				var map = new Map();
-				for(let i = 0; i < keys.length; i++) {
-					map.set(keys[i], data[keys[i]])
-				}
-				return map;
-				}
-			
-			var data_map = dataObjToMap(data);
-
-			// update date
-			var currentDate = data_map.get('date');
-			document.getElementById("displayDate").innerHTML = currentDate;
-
-			// convert object value to key value map
-			var ratesObj = data_map.get('rates');
-			var rates_map = dataObjToMap(ratesObj);
-
-			// determine conversion rate from rates_map
-			var conversionRate = rates_map.get(conversionCurrency)
-
-			if (forwards === true) {
-				calculateFromBase(conversionRate);
-			}
-			else if (forwards === false) {
-				calculateBackwards(conversionRate);
-			}
-			else {
-				// add error handling here
-				console.log("Error.");
-			}
-		// add error handling for fetch() here
-		})
-}
-
-// boolean used to determine whether we are calculating from base input or conversion input
-var convertFromBase;
-
+// event listeners for updated input
 var base_input = document.getElementById("base_num");
 	base_input.addEventListener("keyup", function(event) {
 		if (event.key === "Enter") {
 			// process data in text field based on updated base_input
-			convertFromBase = true; 
-			fetchAPI(convertFromBase);
+			calculateConversion(1);
 	}})	
 
 var convertTo_input = document.getElementById("convertTo_num");
 	convertTo_input.addEventListener("keyup", function(event) {
 		if (event.key === "Enter") {
 			// process data in text field based on updated convertTo_input
-			convertFromBase = false;
-			fetchAPI(convertFromBase);
+			calculateConversion(2);
 		}})
-
-// give headings a starting value upon page landing
-updateHeadings();
