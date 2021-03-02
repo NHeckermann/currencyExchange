@@ -68,7 +68,7 @@ function convertData(data) {
 			}
 		}
 		return map;
-		}
+	}
 	
 	var data_map = dataObjToMap(data);
 
@@ -171,6 +171,7 @@ function calculateConversion(textfield) {
 		var inEuros = conversionAmt / rate;
 		
 		rate = getConversionRate(document.getElementById("baseCurrencyDropdown").value);
+		
 		var baseAmt = (inEuros * rate).toFixed(2);
 
 		// update conversion amt textfield
