@@ -202,11 +202,13 @@ var base_input = document.getElementById("base_num");
 		if (event.key === "Enter") {
 			// process data in text field based on updated base_input
 			calculateConversion(1);
-	}})	
+		}
+	})	
 
 var convertTo_input = document.getElementById("convertTo_num");
 	convertTo_input.addEventListener("keyup", function(event) {
 		if (event.key === "Enter") {
 			// process data in text field based on updated convertTo_input
 			calculateConversion(2);
-		}})
+		}
+	})
