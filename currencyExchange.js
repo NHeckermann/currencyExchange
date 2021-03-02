@@ -8,7 +8,7 @@ var ratesData = fetchAPI().then(function(results){
 	// give all fields a starting value upon page landing
 	calculateConversion(1);
 	updateHeadings();
-});	
+})	
 
 
 // get data from  API 
@@ -24,7 +24,7 @@ function fetchAPI() {
 		.catch((error) => {
 			console.warn("Error: Could not connect to API.");
 		})
-	}
+}
 
 
 // get map of conversion rates and populate dropdown lists
